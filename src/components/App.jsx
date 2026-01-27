@@ -12,9 +12,25 @@ import * as auth from "../utils/auth";
 import "./styles/App.css";
 
 function App() {
+  const [userData, setUserData] = useState({ username: "", email: "" });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const navigate = useNavigate();
+
+  const handleLogin = ({ username, password }) => {
+    if (!username || !password) return;
+
+    auth
+      .authorize(username, password)
+      .then((data) => {
+        if (data.jwt) {
+          setUserData(data.user);
+          setIsLoggedIn(true);
+          navigate("/ducks");
+        }
+      })
+      .catch(console.error);
+  };
 
   const handleRegistration = ({
     username,
@@ -22,14 +38,14 @@ function App() {
     password,
     confirmPassword,
   }) => {
-    if (password === confirmPassword) {
-      auth
-        .register(username, password, email)
-        .then(() => {
-          navigate("/login");
-        })
-        .catch(console.error);
-    }
+    if (password !== confirmPassword) return;
+
+    auth
+      .register(username, password, email)
+      .then(() => {
+        navigate("/login");
+      })
+      .catch(console.error);
   };
 
   return (
@@ -42,22 +58,25 @@ function App() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/my-profile"
         element={
           <ProtectedRoute isLoggedIn={isLoggedIn}>
-            <MyProfile />
+            <MyProfile userData={userData} />
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/login"
         element={
           <div className="loginContainer">
-            <Login />
+            <Login handleLogin={handleLogin} />
           </div>
         }
       />
+
       <Route
         path="/register"
         element={
@@ -66,14 +85,13 @@ function App() {
           </div>
         }
       />
+
       <Route
         path="*"
         element={
-          isLoggedIn ? (
+          isLoggedIn ?
             <Navigate to="/ducks" replace />
-          ) : (
-            <Navigate to="/login" replace />
-          )
+          : <Navigate to="/login" replace />
         }
       />
     </Routes>

@@ -62,7 +62,10 @@ const Register = ({ handleRegistration }) => {
           onChange={handleChange}
         />
         <div className="register__button-container">
-          <button type="submit" className="register__link">
+          <button
+            type="submit"
+            className="register__link"
+          >
             Sign up
           </button>
         </div>
